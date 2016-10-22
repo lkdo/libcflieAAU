@@ -32,7 +32,7 @@
 
 
 #include "cflie/CCrazyflie.h"
-#include "clockgettime.h"
+#include "cflie/clockgettime.h"
 
 CCrazyflie::CCrazyflie(CCrazyRadio *crRadio) {
   m_crRadio = crRadio;

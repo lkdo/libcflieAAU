@@ -1,4 +1,5 @@
-// Copyright (c) 2013, Jan Winkler <winkler@cs.uni-bremen.de>
+// Original work Copyright (c) 2013, Jan Winkler <winkler@cs.uni-bremen.de>
+// Modified work Copyright (c) 2016, Luminita C. Totu <lct@es.aau.dk>, Aalborg University
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,7 +27,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 
-/* \author Jan Winkler */
+/* Original Author: Jan Winkler */
+/* Modifications by: Luminita C. Totu, Aalborg University */
 
 
 #ifndef __C_CRTP_PACKET_H__
@@ -80,14 +82,17 @@ class CCRTPPacket {
     packet class
 
     Initializes the communication packet and sets the given
-    channel. The given data is set as the internal payload data.
+    port. The given data is set as the internal payload data.
 
     \param cData The data pointer to read the new payload data from
     \param nDataLength The length (in bytes) of data to read from
     cData
-    \param nChannel The channel the payload in this packet is
+    \param nPort The port the payload in this packet is
     designated for. */
-  CCRTPPacket(char *cData, int nDataLength, int nChannel);
+  CCRTPPacket(char *cData, int nDataLength, int nPort);
+
+  CCRTPPacket(char *cData, int nDataLength, int nPort, int nChannel);
+
   CCRTPPacket(char cData, int nPort);
   /*! \brief Destructor for the packet class
 

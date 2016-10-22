@@ -1,4 +1,5 @@
-// Copyright (c) 2013, Jan Winkler <winkler@cs.uni-bremen.de>
+// Original work Copyright (c) 2013, Jan Winkler <winkler@cs.uni-bremen.de>
+// Modified work Copyright (c) 2016, Luminita C. Totu <lct@es.aau.dk>, Aalborg University
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,7 +27,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 
-#include <cflie/CCRTPPacket.h>
+/* Original Author: Jan Winkler */
+/* Modifications by: Luminita C. Totu, Aalborg University */
+
+#include "cflie/CCRTPPacket.h"
 
 
 CCRTPPacket::CCRTPPacket(int nPort) {
@@ -37,7 +41,13 @@ CCRTPPacket::CCRTPPacket(int nPort) {
 CCRTPPacket::CCRTPPacket(char *cData, int nDataLength, int nPort) {
   this->basicSetup();
   this->setPort(nPort);
+  this->setData(cData, nDataLength);
+}
 
+CCRTPPacket::CCRTPPacket(char *cData, int nDataLength, int nPort, int nChannel) {
+  this->basicSetup();
+  this->setPort(nPort);
+  this->setChannel(nChannel);
   this->setData(cData, nDataLength);
 }
 

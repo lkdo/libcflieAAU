@@ -1,4 +1,5 @@
-// Copyright (c) 2013, Jan Winkler <winkler@cs.uni-bremen.de>
+// Original work Copyright (c) 2013, Jan Winkler <winkler@cs.uni-bremen.de>
+// Modified work Copyright (c) 2016, Luminita C. Totu <lct@es.aau.dk>, Aalborg University
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,7 +27,15 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 
-#include <cflie/CCrazyRadio.h>
+/* Original Author: Jan Winkler */
+/* Modifications by: Luminita C. Totu, Aalborg University */
+
+#ifdef _WIN32
+	#include <thread>         // std::this_thread::sleep_for
+	#include <chrono>
+#endif
+
+#include "cflie/CCrazyRadio.h"
 
 
 CCrazyRadio::CCrazyRadio(std::string strRadioIdentifier) {
@@ -95,7 +104,11 @@ bool CCrazyRadio::openUSBDongle() {
   if(lstDevices.size() > 0) {
     // For now, just take the first device. Give it a second to
     // initialize the system permissions.
+#ifdef _WIN32
+	Sleep(1000.0);
+#else
     sleep(1.0);
+#endif
 
     libusb_device *devFirst = lstDevices.front();
     int nError = libusb_open(devFirst, &m_hndlDevice);
@@ -329,7 +342,7 @@ CCRTPPacket *CCrazyRadio::sendPacket(CCRTPPacket *crtpSend, bool bDeleteAfterwar
 
       switch(sPort) {
       case 0: { // Console
-	char cText[nLength];
+	char *cText = new char[nLength];
 	std::memcpy(cText, &cData[1], nLength - 1);
 	cText[nLength - 1] = '\0';
 
@@ -360,7 +373,7 @@ CCRTPPacket *CCrazyRadio::readACK() {
   CCRTPPacket *crtpPacket = NULL;
 
   int nBufferSize = 64;
-  char cBuffer[nBufferSize];
+  char *cBuffer = new char[nBufferSize];
   int nBytesRead = nBufferSize;
 
   if(this->readData(cBuffer, nBytesRead)) {
@@ -441,8 +454,11 @@ CCRTPPacket *CCrazyRadio::sendAndReceive(CCRTPPacket *crtpSend, int nPort, int n
       if(crtpReceived) {
 	delete crtpReceived;
       }
-
+#ifdef _WIN32
+      std::this_thread::sleep_for(std::chrono::microseconds(nMicrosecondsWait));
+#else
       usleep(nMicrosecondsWait);
+#endif
       crtpReceived = this->waitForPacket();
     }
   }

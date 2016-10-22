@@ -1,4 +1,5 @@
-// Copyright (c) 2013, Jan Winkler <winkler@cs.uni-bremen.de>
+// Original work Copyright (c) 2013, Jan Winkler <winkler@cs.uni-bremen.de>
+// Modified work Copyright (c) 2016, Luminita C. Totu <lct@es.aau.dk>, Aalborg University
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,7 +27,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 
-/* \author Jan Winkler */
+/* Original Author: Jan Winkler */
+/* Modifications by: Luminita C. Totu, Aalborg University */
 
 
 #ifndef __C_CRAZY_RADIO_H__
@@ -38,8 +40,13 @@
 #include <string>
 #include <cstdio>
 #include <cstring>
-#include <libusb-1.0/libusb.h>
-#include <unistd.h>
+#ifdef _WIN32
+    #include "libusb.h"
+	#include <io.h>
+#else
+	#include <libusb-1.0/libusb.h>
+	#include <unistd.h>
+#endif
 #include <iostream>
 #include <sstream>
 

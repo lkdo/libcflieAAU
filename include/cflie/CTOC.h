@@ -1,4 +1,5 @@
-// Copyright (c) 2013, Jan Winkler <winkler@cs.uni-bremen.de>
+// Original work Copyright (c) 2013, Jan Winkler <winkler@cs.uni-bremen.de>
+// Modified work Copyright (c) 2016, Luminita C. Totu <lct@es.aau.dk>, Aalborg University
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,7 +27,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 
-/* \author Jan Winkler */
+/* Original Author: Jan Winkler */
+/* Modifications by: Luminita C. Totu, Aalborg University */
 
 
 #ifndef __C_TOC_H__
@@ -39,10 +41,13 @@
 #include <cstdlib>
 #include <iostream>
 
+#ifdef _WIN32
+	#include <time.h>
+#endif
+
 // Private
 #include "CCrazyRadio.h"
 #include "CCRTPPacket.h"
-
 
 /*! \brief Storage element for logged variable identities */
 struct TOCElement {
@@ -65,6 +70,9 @@ struct LoggingBlock {
   int nID;
   double dFrequency;
   std::list<int> lstElementIDs;
+  uint32_t timestamp;    
+  bool newData; // reset when localtimestamp is read 
+  double localTimestamp;
 };
 
 
@@ -81,7 +89,7 @@ class CTOC {
   bool requestItem(int nID);
   bool processItem(CCRTPPacket* crtpItem);
 
-  CCRTPPacket* sendAndReceive(CCRTPPacket* crtpSend, int nChannel);
+  // CCRTPPacket* sendAndReceive(CCRTPPacket* crtpSend, int nChannel);
 
  public:
   CTOC(CCrazyRadio* crRadio, int nPort);
@@ -89,6 +97,9 @@ class CTOC {
 
   bool sendTOCPointerReset();
   bool requestMetaData();
+
+  bool sendParameter(char ID, char data[]);
+
   bool requestItems();
 
   struct TOCElement elementForName(std::string strName, bool& bFound);
@@ -101,12 +112,16 @@ class CTOC {
   bool unregisterLoggingBlock(std::string strName);
   struct LoggingBlock loggingBlockForName(std::string strName, bool& bFound);
   struct LoggingBlock loggingBlockForID(int nID, bool& bFound);
-
+  void loggingBlockForID_setTimestamp(int nID, uint32_t timestamp); 
+  
   bool startLogging(std::string strName, std::string strBlockName);
   bool stopLogging(std::string strName);
   bool isLogging(std::string strName);
 
   double doubleValue(std::string strName);
+  uint32_t timestampValue(std::string blockName);
+  double localTimestampValue(std::string blockName);
+  bool newDataValue(std::string blockName);
 
   bool enableLogging(std::string strBlockName);
 
@@ -116,7 +131,7 @@ class CTOC {
   bool setFloatValueForElementID(int nElementID, float fValue);
   bool addElementToBlock(int nBlockID, int nElementID);
   bool unregisterLoggingBlockID(int nID);
+  bool resetLogCommand();
 };
-
 
 #endif /* __C_TOC_H__ */

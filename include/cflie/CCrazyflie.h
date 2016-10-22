@@ -1,4 +1,5 @@
-// Copyright (c) 2013, Jan Winkler <winkler@cs.uni-bremen.de>
+// Original work Copyright (c) 2013, Jan Winkler <winkler@cs.uni-bremen.de>
+// Modified work Copyright (c) 2016, Luminita C. Totu <lct@es.aau.dk>, Aalborg University
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,15 +27,12 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 
-/* \author Jan Winkler */
+/* Original Author: Jan Winkler */
+/* Modifications by: Luminita C. Totu, Aalborg University */
 
 
 #ifndef __C_CRAZYFLIE_H__
 #define __C_CRAZYFLIE_H__
-
-
-#define NSEC_PER_SEC 1000000000L
-
 
 // System
 #include <cmath>
@@ -78,6 +76,11 @@ class CCrazyflie {
   float m_fYaw;
   /*! \brief The current desired control set point (position/yaw to
       reach) */
+  /*! \brief The current external position data (to be sent to 
+       the quadrotor) */
+  float m_fX; 
+  float m_fY;
+  float m_fZ;
 
   // Control related parameters
   /*! \brief Maximum absolute value for the roll that will be sent to
@@ -96,6 +99,10 @@ class CCrazyflie {
   double m_dSendSetpointPeriod;
   double m_dSetpointLastSent;
   bool m_bSendsSetpoints;
+  bool m_bSendsExtPosition;
+  double m_dExtPositionLastSent;
+  double m_dSendExtPositionMinPeriod;
+  bool m_bNewExtPosition;
   CTOC *m_tocParameters;
   CTOC *m_tocLogs;
   enum State m_enumState;
@@ -118,30 +125,41 @@ class CCrazyflie {
     \param sThrust The desired thrust value.
     \return Boolean value denoting whether or not the command could be sent successfully. */
   bool sendSetpoint(float fRoll, float fPitch, float fYaw, short sThrust);
+  
+  bool sendExtPosition(float fX, float fY, float fZ);
 
   void disableLogging();
-
-  void enableStabilizerLogging();
-  void enableGyroscopeLogging();
-  void enableAccelerometerLogging();
-
-  void disableStabilizerLogging();
-  void disableGyroscopeLogging();
-  void disableAccelerometerLogging();
-
-  void enableBatteryLogging();
-  void disableBatteryLogging();
-
   bool startLogging();
   bool stopLogging();
 
+  void sendFlightModeParameters();
+
+  void enableAccelerometerLogging();
+  void disableAccelerometerLogging();
+
+  void enableStabilizerLogging();
+  void disableStabilizerLogging();
+
+  void enableActuatorLogging();
+  void disableActuatorLogging();
+
+  void enableGyroscopeLogging();
+  void disableGyroscopeLogging();
+
+  void enableBatteryLogging();
+  void disableBatteryLogging();
+  
   void enableMagnetometerLogging();
   void disableMagnetometerLogging();
 
   void enableAltimeterLogging();
   void disableAltimeterLogging();
 
-  double currentTime();
+  void enableMotorLogging();
+  void disableMotorLogging();
+
+  void enableExtPosLogging();
+  void disableExtPosLogging();
 
  public:
   /*! \brief Constructor for the copter convenience class
@@ -166,11 +184,7 @@ class CCrazyflie {
 
     \param nThrust The thrust value to send (> 10000) */
   void setThrust(int nThrust);
-  /*! \brief Returns the current thrust
-
-    \return The current thrust value as reported by the copter */
-  int thrust();
-
+  
   /*! \brief Set the roll control set point
 
     The roll value that will be sent to the internal copter
@@ -178,13 +192,7 @@ class CCrazyflie {
 
     \param fRoll The roll value to send */
   void setRoll(float fRoll);
-  /*! \brief Returns the current roll
-
-    Roll values are in degree, ranging from -180.0deg to 180.0deg.
-
-    \return The current roll value as reported by the copter */
-  float roll();
-
+  
   /*! \brief Set the pitch control set point
 
     The pitch value that will be sent to the internal copter
@@ -192,13 +200,7 @@ class CCrazyflie {
 
     \param fPitch The pitch value to send */
   void setPitch(float fPitch);
-  /*! \brief Returns the current pitch
-
-    Pitch values are in degree, ranging from -180.0deg to 180.0deg.
-
-    \return The current pitch value as reported by the copter */
-  float pitch();
-
+  
   /*! \brief Set the yaw control set point
 
     The yaw value that will be sent to the internal copter
@@ -206,12 +208,10 @@ class CCrazyflie {
 
     \param fYaw The yaw value to send */
   void setYaw(float fYaw);
-  /*! \brief Returns the current yaw
-
-    Yaw values are in degree, ranging from -180.0deg to 180.0deg.
-
-    \return The current yaw value as reported by the copter */
-  float yaw();
+  
+  /*! \brief Set the external position data
+     */ 
+  void setExtPosition(float X, float Y, float Z);
 
   /*! \brief Manages internal calculation operations
 
@@ -256,6 +256,17 @@ class CCrazyflie {
     sent while cycle(). Otherwise, not. */
   void setSendSetpoints(bool bSendSetpoints);
 
+  /*! \brief Set whether external position data  is sent while cycle()
+
+    While performing the cycle() function, choose if the external 
+    position datais sent to the copter regularly.
+
+    Default value: `false`
+
+    \param bSendSetpoints When set to `true`, the current position 
+    data is sent while cycle(). Otherwise, not. */
+  void setSendExtPosition(bool bSendExtPosition);
+
   /*! \brief Whether or not setpoints are currently sent to the copter
 
     \return Boolean value denoting whether or not the current setpoint
@@ -278,28 +289,79 @@ class CCrazyflie {
     log variable. */
   double sensorDoubleValue(std::string strName);
 
-  /*! \brief Report the current battery level
+  uint32_t sensorTimestamp(std::string blockName);
+  double sensorLocalTimestamp(std::string blockName);
+  bool sensorNewData(std::string blockName);
 
-    \return Double value denoting the battery level as reported by the
-    copter. */
-  double batteryLevel();
-
+  uint32_t accTimestamp();
+  double accLocalTimestamp();
+  bool accNewData();
   float accX();
   float accY();
   float accZ();
   float accZW();
-  float asl();
-  float aslLong();
-  float temperature();
-  float pressure();
+  float accMag2();
+
+  uint32_t baroTimestamp();
+  double baroLocalTimestamp();
+  bool baroNewData();
+  float baroAsl();
+  float baroAslLong();
+  float baroAslRaw();
+  float baroTemp();
+  float baroPressure();
+
+  uint32_t gyroTimestamp();
+  double gyroLocalTimestamp();
+  bool gyroNewData();
   float gyroX();
   float gyroY();
   float gyroZ();
-  float batteryState();
+
+  uint32_t batTimestamp();
+  double batLocalTimestamp();
+  bool batNewData();
+  float batState();
+  float batChargeCurrent();
+  double batLevel();
+
+  uint32_t magTimestamp();
+  double magLocalTimestamp();
+  bool magNewData();
   float magX();
   float magY();
   float magZ();
 
+  uint32_t motorTimestamp();
+  double motorLocalTimestamp();
+  bool motorNewData();
+  float motor1();
+  float motor2();
+  float motor3();
+  float motor4();
+
+  uint32_t stabTimestamp();
+  double stabLocalTimestamp();
+  bool stabNewData();
+  int stabThrust();
+  float stabRoll();
+  float stabPitch();
+  float stabYaw();
+
+  uint32_t actuatorTimestamp();
+  double actuatorLocalTimestamp();
+  bool actuatorNewData();
+  float actuatorThrust();
+  float actuatorRoll();
+  float actuatorPitch();
+  float actuatorYaw();
+
+  uint32_t extPosTimestamp();
+  double extPosLocalTimestamp();
+  bool extPosNewData();
+  float extPosX();
+  float extPosY();
+  float extPosZ();
 };
 
 

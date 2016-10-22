@@ -3,6 +3,8 @@ Modified cflielib library for windows portability, and
 adding features for Aalborg University projects with the
 Crazyflie. Tested on Windows only for now.
 
+See also: https://github.com/lkdo/cflieOffboardAAU
+
 Oct 2016, Luminita C. Totu 
 
 Crazyflie Nano C++ Client Library [![Build Status](https://travis-ci.org/fairlight1337/libcflie.svg?branch=master)](https://travis-ci.org/fairlight1337/libcflie)

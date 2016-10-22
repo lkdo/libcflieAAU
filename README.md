@@ -3,6 +3,8 @@ Modified cflielib library for windows portability, and
 adding features for Aalborg University projects with the
 Crazyflie. Tested on Windows only for now.
 
+ToDo: Cmake for Windows
+
 See also: https://github.com/lkdo/cflieOffboardAAU
 
 Oct 2016, Luminita C. Totu 

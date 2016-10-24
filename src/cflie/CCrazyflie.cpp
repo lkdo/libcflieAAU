@@ -363,6 +363,7 @@ bool CCrazyflie::startLogging() {
   //this->enableBatteryLogging();
   //this->enableActuatorLogging();
   //this->enableMotorLogging();
+  //this->enableSMRM_rollLogging();
 
    this->enableExtPosLogging();
   
@@ -378,6 +379,7 @@ bool CCrazyflie::stopLogging() {
   this->disableActuatorLogging();
   this->disableBatteryLogging();
   this->disableMotorLogging();
+  this->disableSMRM_rollLogging();
   this->disableExtPosLogging();
   return true;
 }
@@ -742,6 +744,49 @@ float CCrazyflie::baroTemp() {
 
 void CCrazyflie::disableAltimeterLogging() {
   m_tocLogs->unregisterLoggingBlock("barometer");
+}
+
+void CCrazyflie::enableSMRM_rollLogging() {
+	m_tocLogs->registerLoggingBlock("SMRM_roll", 1000);
+
+	m_tocLogs->startLogging("SMRM_roll.x_hat", "SMRM_roll");
+	m_tocLogs->startLogging("SMRM_roll.v_hat", "SMRM_roll");
+	m_tocLogs->startLogging("SMRM_roll.th_hat", "SMRM_roll");
+	m_tocLogs->startLogging("SMRM_roll.om_hat", "SMRM_roll");
+
+}
+
+uint32_t CCrazyflie::SMRM_rollTimestamp() {
+	return this->sensorTimestamp("SMRM_roll");
+}
+
+double CCrazyflie::SMRM_rollLocalTimestamp() {
+	return this->sensorLocalTimestamp("SMRM_roll");
+}
+
+bool CCrazyflie::SMRM_rollNewData()
+{
+	return this->sensorNewData("SMRM_roll");
+}
+
+float CCrazyflie::SMRM_rollX_hat() {
+	return this->sensorDoubleValue("SMRM_roll.x_hat");
+}
+
+float CCrazyflie::SMRM_rollV_hat() {
+	return this->sensorDoubleValue("SMRM_roll.v_hat");
+}
+
+float CCrazyflie::SMRM_rollTh_hat() {
+	return this->sensorDoubleValue("SMRM_roll.th_hat");
+}
+
+float CCrazyflie::SMRM_rollOm_hat() {
+	return this->sensorDoubleValue("SMRM_roll.om_hat");
+}
+
+void CCrazyflie::disableSMRM_rollLogging() {
+	m_tocLogs->unregisterLoggingBlock("SMRM_roll");
 }
 
 void CCrazyflie::enableExtPosLogging()
